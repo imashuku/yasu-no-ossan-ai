@@ -205,10 +205,16 @@
                 }
 
                 const data = await response.json();
-                return data.reply;
+                return {
+                    reply: data.reply,      // 表示用テキスト
+                    ttsText: data.ttsText   // 読み上げ用テキスト（ひらがな多め）
+                };
             } catch (error) {
                 console.error('Chat API Error:', error);
-                return "すまんなぁ、ちょっと調子悪いみたいや... もう一回言うてみてくれへんか？💦";
+                return {
+                    reply: "すまんなぁ、ちょっと調子悪いみたいや... もう一回言うてみてくれへんか？💦",
+                    ttsText: "すまんなぁ、ちょっとちょうしわるいみたいや... もういっかいいうてみてくれへんか？"
+                };
             }
         }
 
@@ -290,6 +296,7 @@
 
             // AI応答生成
             let aiResponse = "";
+            let audioBlob = null;
             try {
                 // ローディング表示
                 const loadingId = 'loading-' + Date.now();
@@ -306,20 +313,25 @@
                 chatBox.scrollTop = chatBox.scrollHeight;
 
                 // API呼び出し
-                aiResponse = await generateAIResponse(text);
+                const { reply, ttsText } = await generateAIResponse(text);
+                aiResponse = reply;
+                
+                // デバッグ用ログ
+                console.log('📝 表示用:', reply);
+                console.log('🔊 読み上げ用:', ttsText);
 
                 // ローディング削除
                 document.getElementById(loadingId).remove();
+                
+                // 音声生成（読み上げ用テキストを使用）
+                if (isVoiceEnabled) {
+                    document.getElementById('status-text').textContent = '🎙️ 音声生成中...';
+                    // ttsText（ひらがな多め）を使って音声生成
+                    audioBlob = await generateSpeech(ttsText);
+                }
 
             } catch (e) {
                 aiResponse = "ごめんな、ちょっと耳が遠なってしもて... もう一回頼むわ！";
-            }
-            
-            // 音声生成（並行処理）
-            let audioBlob = null;
-            if (isVoiceEnabled) {
-                document.getElementById('status-text').textContent = '🎙️ 音声生成中...';
-                audioBlob = await generateSpeech(aiResponse);
             }
             
             // AI応答表示
