@@ -185,14 +185,22 @@
     <audio id="audio-player"></audio>
 
     <script>
+        // ========================================
+        // 🔐 ここにAPIキーとボイスIDを設定してください
+        // ========================================
+        const DEFAULT_API_KEY = 'sk_876475d5dd5129010a548d24285f60ba65acdf09ffb298ff';  // ← ここにAPIキーを貼り付け（例: 'sk_...'）
+        const DEFAULT_VOICE_ID = 'Nb8uyjtqY45PClhrStIl'; // ← ここにボイスIDを貼り付け
+        // ========================================
+
         // グローバル変数
-        let API_KEY = localStorage.getItem('elevenlabs_api_key') || '';
-        let VOICE_ID = localStorage.getItem('elevenlabs_voice_id') || '';
+        let API_KEY = localStorage.getItem('elevenlabs_api_key') || DEFAULT_API_KEY;
+        let VOICE_ID = localStorage.getItem('elevenlabs_voice_id') || DEFAULT_VOICE_ID;
         let isVoiceEnabled = false;
         let generatedAudioBlob = null;
 
         // 初期化
         document.addEventListener('DOMContentLoaded', () => {
+            // デフォルト値またはlocalStorageに値があれば自動で有効化
             if (API_KEY && VOICE_ID) {
                 document.getElementById('api-modal').classList.add('hidden');
                 enableVoiceMode();
