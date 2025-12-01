@@ -1,0 +1,24 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# 抽出した画像（大量のため除外）
+extracted_images/
+
+# PDF解析結果
+pdf_contents.txt
+pdf_contents_v2.txt
+
+# テスト用音声ファイル
+TestVoice_*.mp3
+Imashuku_Generated_Speech.mp3
+live_demo_output.mp3
+
+# OS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
