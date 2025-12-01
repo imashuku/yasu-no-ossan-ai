@@ -506,12 +506,47 @@ export default async function handler(req, res) {
         },
         { role: "user", content: message }
       ],
-      max_tokens: 300,
+      max_tokens: 500,
       temperature: 0.8, // 少しクリエイティブに
     });
 
     const reply = completion.choices[0].message.content;
-    res.status(200).json({ reply });
+
+    // 読み上げ用テキストを生成（ひらがな多め・読みやすい形式）
+    const ttsCompletion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `あなたは音声合成（TTS）用のテキスト変換専門家です。
+以下のルールに従って、入力されたテキストを音声読み上げに最適化してください：
+
+【変換ルール】
+1. 漢字はできるだけひらがなに変換する（特に難読漢字）
+2. 数字は漢数字ではなく「いち、に、さん」のように読み仮名で書く
+3. 英語・カタカナ語はそのまま残す（ElevenLabsが読める）
+4. 句読点は適切に残す（間を作るため）
+5. 「〜」は「ー」に変換
+6. 顔文字・絵文字は削除
+7. 括弧内の補足説明は削除または簡略化
+8. 「（笑）」は「、ふふっ、」のように自然な笑い声に変換
+9. 関西弁の語尾はそのまま残す（「やで」「やねん」など）
+
+【出力形式】
+変換後のテキストのみを出力してください。説明は不要です。`
+        },
+        { role: "user", content: reply }
+      ],
+      max_tokens: 500,
+      temperature: 0.3,
+    });
+
+    const ttsText = ttsCompletion.choices[0].message.content;
+    
+    res.status(200).json({ 
+      reply,           // 表示用テキスト（オリジナル）
+      ttsText          // 読み上げ用テキスト（ひらがな多め）
+    });
 
   } catch (error) {
     console.error('OpenAI API Error:', error);

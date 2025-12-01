@@ -5,7 +5,13 @@ const path = require('path');
 const API_KEY = process.env.ELEVENLABS_API_KEY || '';
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '';
 
-// index.html を読み込み
+// 出力ディレクトリを作成
+const distDir = path.join(__dirname, 'dist');
+if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir);
+}
+
+// index.html を読み込み・処理
 const htmlPath = path.join(__dirname, 'index.html');
 let html = fs.readFileSync(htmlPath, 'utf8');
 
@@ -13,14 +19,14 @@ let html = fs.readFileSync(htmlPath, 'utf8');
 html = html.replace("const DEFAULT_API_KEY = '';", `const DEFAULT_API_KEY = '${API_KEY}';`);
 html = html.replace("const DEFAULT_VOICE_ID = '';", `const DEFAULT_VOICE_ID = '${VOICE_ID}';`);
 
-// 出力ディレクトリを作成
-const distDir = path.join(__dirname, 'dist');
-if (!fs.existsSync(distDir)) {
-    fs.mkdirSync(distDir);
-}
-
 // dist/index.html に出力
 fs.writeFileSync(path.join(distDir, 'index.html'), html);
+
+// prototype_demo.html もコピー
+const prototypeHtmlPath = path.join(__dirname, 'prototype_demo.html');
+if (fs.existsSync(prototypeHtmlPath)) {
+    fs.copyFileSync(prototypeHtmlPath, path.join(distDir, 'prototype_demo.html'));
+}
 
 // 他の静的ファイルもコピー
 const filesToCopy = ['ossan_character.png'];
