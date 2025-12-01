@@ -25,31 +25,6 @@
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <!-- APIキー設定モーダル -->
-    <div id="api-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-            <h2 class="text-xl font-bold mb-4">🔑 ElevenLabs API設定</h2>
-            <p class="text-sm text-gray-600 mb-4">音声生成機能を使うには、ElevenLabsのAPIキーとボイスIDを入力してください。</p>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">APIキー</label>
-                    <input type="password" id="api-key-input" class="w-full border rounded p-2" placeholder="sk_...">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">ボイスID（作成したボイスのID）</label>
-                    <input type="text" id="voice-id-input" class="w-full border rounded p-2" placeholder="例: JBFqnCBsd6RMkjVDRqzb">
-                    <p class="text-xs text-gray-500 mt-1">ElevenLabsの「Voices」から確認できます</p>
-                </div>
-                <button onclick="saveApiSettings()" class="w-full bg-orange-500 text-white font-bold py-2 rounded hover:bg-orange-600">
-                    設定を保存して開始
-                </button>
-                <button onclick="skipApiSettings()" class="w-full text-gray-500 text-sm hover:underline">
-                    スキップ（音声なしでデモ）
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- ナビゲーション -->
     <nav class="bg-orange-500 p-4 shadow-lg text-white">
         <div class="container mx-auto flex justify-between items-center">
@@ -59,7 +34,6 @@
             <div class="space-x-4">
                 <button onclick="showTab('chat')" id="btn-chat" class="hover:bg-orange-600 px-3 py-2 rounded font-bold bg-white text-orange-500">お悩み相談室AI</button>
                 <button onclick="showTab('video')" id="btn-video" class="hover:bg-orange-600 px-3 py-2 rounded font-bold text-white border border-white">動画自動生成AI</button>
-                <button onclick="document.getElementById('api-modal').classList.remove('hidden')" class="text-xs opacity-70 hover:opacity-100">⚙️設定</button>
             </div>
         </div>
     </nav>
@@ -100,11 +74,6 @@
                 <div class="p-4 bg-gray-50 border-t border-gray-200 flex">
                     <input type="text" id="user-input" class="flex-1 border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="ここに入力してな..." onkeypress="if(event.key==='Enter')sendMessage()">
                     <button onclick="sendMessage()" id="send-btn" class="bg-orange-500 text-white px-6 py-2 rounded-r-lg hover:bg-orange-600 font-bold">送信</button>
-                </div>
-                
-                <!-- 音声モード表示（クリック可能） -->
-                <div class="p-2 bg-gray-100 text-center border-t border-gray-200">
-                    <button onclick="document.getElementById('api-modal').classList.remove('hidden')" id="voice-status" class="text-sm text-gray-500 hover:text-orange-500 hover:underline cursor-pointer transition">🔇 音声モード: OFF（タップして設定）</button>
                 </div>
             </div>
         </div>
@@ -195,50 +164,15 @@
         // グローバル変数
         let API_KEY = localStorage.getItem('elevenlabs_api_key') || DEFAULT_API_KEY;
         let VOICE_ID = localStorage.getItem('elevenlabs_voice_id') || DEFAULT_VOICE_ID;
-        let isVoiceEnabled = false;
+        
+        // APIキーがあれば音声有効
+        let isVoiceEnabled = (API_KEY && VOICE_ID);
         let generatedAudioBlob = null;
 
         // 初期化
         document.addEventListener('DOMContentLoaded', () => {
-            // デフォルト値またはlocalStorageに値があれば自動で有効化
-            if (API_KEY && VOICE_ID) {
-                document.getElementById('api-modal').classList.add('hidden');
-                enableVoiceMode();
-            }
+            console.log("野洲のおっさんAI 起動！");
         });
-
-        // API設定を保存
-        function saveApiSettings() {
-            API_KEY = document.getElementById('api-key-input').value;
-            VOICE_ID = document.getElementById('voice-id-input').value;
-            
-            if (API_KEY && VOICE_ID) {
-                localStorage.setItem('elevenlabs_api_key', API_KEY);
-                localStorage.setItem('elevenlabs_voice_id', VOICE_ID);
-                document.getElementById('api-modal').classList.add('hidden');
-                enableVoiceMode();
-            } else {
-                alert('APIキーとボイスIDの両方を入力してください');
-            }
-        }
-
-        // スキップ
-        function skipApiSettings() {
-            document.getElementById('api-modal').classList.add('hidden');
-        }
-
-        // 音声モードを有効化
-        function enableVoiceMode() {
-            isVoiceEnabled = true;
-            const voiceStatus = document.getElementById('voice-status');
-            voiceStatus.innerHTML = '🔊 音声モード: ON（AIが喋ります！）';
-            voiceStatus.classList.remove('text-gray-500');
-            voiceStatus.classList.add('text-green-600', 'font-bold');
-            // ONの時もタップで設定画面を開けるようにする
-            voiceStatus.onclick = function() {
-                document.getElementById('api-modal').classList.remove('hidden');
-            };
-        }
 
         // タブ切り替え
         function showTab(tabId) {
