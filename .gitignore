@@ -1,6 +1,11 @@
 # Build output
 dist/
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # Python
 venv/
 __pycache__/
@@ -24,4 +29,7 @@ live_demo_output.mp3
 # IDE
 .idea/
 .vscode/
+
+# Node modules
+node_modules/
 
