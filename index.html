@@ -189,16 +189,27 @@
             document.getElementById('btn-' + tabId).classList.remove('text-white', 'border', 'border-white');
         }
 
-        // AI応答を生成（簡易版）
-        function generateAIResponse(userMessage) {
-            const responses = [
-                "なるほどなぁ。それは大変やったなぁ。でも大丈夫や、ワシがついとるで！",
-                "せやなぁ、わかるわかる。そういう時はな、琵琶湖でも眺めて深呼吸するとええで！",
-                "ほんまか！それはすごいやん！応援しとるで！",
-                "うんうん、話してくれてありがとうな。滋賀県民は粘り強いんや！",
-                "ワシもな、昔は悩んだこともあったんや。でも一歩ずつ進めば大丈夫やで！"
-            ];
-            return responses[Math.floor(Math.random() * responses.length)];
+        // AI応答を生成（ChatGPT API呼び出し）
+        async function generateAIResponse(userMessage) {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessage }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('API Error');
+                }
+
+                const data = await response.json();
+                return data.reply;
+            } catch (error) {
+                console.error('Chat API Error:', error);
+                return "すまんなぁ、ちょっと調子悪いみたいや... もう一回言うてみてくれへんか？💦";
+            }
         }
 
         // ElevenLabsで音声生成
@@ -278,7 +289,31 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             // AI応答生成
-            const aiResponse = generateAIResponse(text);
+            let aiResponse = "";
+            try {
+                // ローディング表示
+                const loadingId = 'loading-' + Date.now();
+                chatBox.innerHTML += `
+                    <div id="${loadingId}" class="flex items-start mb-4">
+                        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-2 border border-orange-300 overflow-hidden">
+                            <img src="ossan_character.png" alt="野洲のおっさん" class="w-full h-full object-cover">
+                        </div>
+                        <div class="bg-gray-100 p-3 rounded-2xl rounded-tl-none text-gray-500 text-sm">
+                            考え中やで...🦆
+                        </div>
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // API呼び出し
+                aiResponse = await generateAIResponse(text);
+
+                // ローディング削除
+                document.getElementById(loadingId).remove();
+
+            } catch (e) {
+                aiResponse = "ごめんな、ちょっと耳が遠なってしもて... もう一回頼むわ！";
+            }
             
             // 音声生成（並行処理）
             let audioBlob = null;
