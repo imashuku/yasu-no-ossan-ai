@@ -357,14 +357,16 @@
             document.getElementById('status-text').textContent = '🤔 考え中...';
             const { reply, ttsText } = await fetchAIResponse(text);
             
+            // デバッグ用ログ（常に出力）
+            console.log('📝 表示用:', reply);
+            console.log('🔊 読み上げ用:', ttsText);
+            
             // 音声生成（読み上げ用テキストを使用）
             let audioBlob = null;
             if (isVoiceEnabled) {
                 document.getElementById('status-text').textContent = '🎙️ 音声生成中...';
                 // ttsText（ひらがな多め）を使って音声生成
                 audioBlob = await generateSpeech(ttsText);
-                console.log('📝 表示用:', reply);
-                console.log('🔊 読み上げ用:', ttsText);
             }
             
             // AI応答表示（表示用テキストを使用）
